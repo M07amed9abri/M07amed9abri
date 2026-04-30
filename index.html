@@ -3,85 +3,135 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M07amed Sabri | الصفحة الرئيسية</title>
+    <title>M07amed9abri | الصفحة الرئيسية</title>
+    
+    <!-- ربط Firebase بالموقع -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // بيانات Firebase الخاصة بك
+        const firebaseConfig = {
+            apiKey: "AIzaSyCXMcpxwSq-PJdmviG0rVgayPgy8NEnqn0",
+            authDomain: "m07amed9abri-auth.firebaseapp.com",
+            projectId: "m07amed9abri-auth",
+            appId: "1:840232341099:web:061164fada80d4a640ab2e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // مراقبة حالة المستخدم وتغيير الأزرار
+        onAuthStateChanged(auth, (user) => {
+            const authSection = document.getElementById('auth-section');
+            const userSection = document.getElementById('user-section');
+            const userNameDisplay = document.getElementById('user-name-display');
+
+            if (user) {
+                authSection.style.display = 'none';
+                userSection.style.display = 'block';
+                userNameDisplay.innerText = user.email; // هيعرض إيميلك لما تدخل
+            } else {
+                authSection.style.display = 'block';
+                userSection.style.display = 'none';
+            }
+        });
+
+        // وظيفة تسجيل الخروج
+        window.logout = () => {
+            signOut(auth).then(() => {
+                location.reload();
+            });
+        };
+    </script>
+
     <style>
-        /* تنسيقات عامة للموقع */
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --text: #f8fafc;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #0f172a; /* لون خلفية غامق واحترافي */
-            color: white;
+            background-color: var(--bg);
+            color: var(--text);
             text-align: center;
         }
 
-        /* شريط التنقل الجديد (Navigation Bar) */
+        /* شريط التنقل */
         nav {
-            background-color: #1e293b;
-            padding: 20px;
-            border-bottom: 2px solid #3b82f6;
+            background-color: var(--card);
+            padding: 15px 5%;
             display: flex;
-            justify-content: center;
-            gap: 15px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
         }
 
         .btn {
-            padding: 12px 24px;
-            text-decoration: none;
+            padding: 8px 18px;
             border-radius: 8px;
-            font-weight: bold;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
             transition: 0.3s;
+            cursor: pointer;
+            border: none;
+            display: inline-block;
         }
 
-        .btn-login {
-            background-color: #3b82f6;
-            color: white;
+        .btn-login { background: var(--primary); color: white; margin-left: 10px; }
+        .btn-reg { background: var(--secondary); color: white; }
+        .btn-logout { background: var(--danger); color: white; margin-right: 15px; }
+
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+
+        /* المحتوى */
+        .hero {
+            padding: 80px 20px;
         }
 
-        .btn-register {
-            background-color: #10b981;
-            color: white;
-        }
-
-        .btn:hover {
-            opacity: 0.8;
-            transform: translateY(-2px);
-        }
-
-        /* محتوى الصفحة الرئيسي */
-        .content {
-            padding: 50px 20px;
-        }
-
-        h1 {
-            color: #3b82f6;
-            font-size: 2.5rem;
-        }
-
-        p {
-            color: #94a3b8;
-            font-size: 1.2rem;
-        }
+        h1 { font-size: 3rem; margin-bottom: 10px; }
+        .highlight { color: var(--primary); }
+        p { color: #94a3b8; font-size: 1.2rem; max-width: 600px; margin: 0 auto 30px; }
     </style>
 </head>
 <body>
 
-    <!-- شريط الأزرار الجديد -->
     <nav>
-        <a href="login.html" class="btn btn-login">تسجيل الدخول</a>
-        <a href="register.html" class="btn btn-register">إنشاء حساب جديد</a>
+        <a href="index.html" class="logo">M07amed9abri</a>
+        
+        <!-- قسم الأزرار (يتغير حسب الحالة) -->
+        <div id="auth-section">
+            <a href="login.html" class="btn btn-login">دخول</a>
+            <a href="register.html" class="btn btn-reg">إنشاء حساب</a>
+        </div>
+
+        <div id="user-section" style="display: none;">
+            <span>مرحباً، <span id="user-name-display" style="color: var(--secondary);"></span></span>
+            <button onclick="logout()" class="btn btn-logout">خروج</button>
+        </div>
     </nav>
 
-    <!-- محتوى موقعك -->
-    <div class="content">
-        <h1>أهلاً بك في موقع محمد صبري</h1>
-        <p>هذا الموقع الآن يدعم نظام تسجيل المستخدمين عبر Firebase.</p>
-        <hr style="width: 50%; border: 0.5px solid #334155; margin: 30px auto;">
+    <div class="hero">
+        <h1>أهلاً بك في عالم <span class="highlight">M07amed9abri</span></h1>
+        <p>موقعك المطور الآن يدعم تسجيل العضويات وإدارة الحسابات بشكل كامل واحترافي.</p>
         
-        <!-- هنا تقدر تكمل باقي كود موقعك القديم -->
-        <div id="old-content">
-            <!-- مساحة مخصصة لأي محتوى إضافي تحب تظهره -->
+        <div style="margin-top: 40px; padding: 20px; background: var(--card); border-radius: 15px; display: inline-block;">
+            <small>حالة النظام: <span style="color: var(--secondary);">متصل بـ Firebase ✅</span></small>
         </div>
     </div>
 
