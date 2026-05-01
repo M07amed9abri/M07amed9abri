@@ -23,7 +23,7 @@
 
         let currentUser = null;
         let userPoints = 0;
-        const MIN_WITHDRAW = 500; // الحد الأدنى ثابت 500 نقطة
+        const MIN_WITHDRAW = 500; 
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -51,9 +51,7 @@
             if (userPoints < MIN_WITHDRAW) { alert(`الحد الأدنى للسحب هو ${MIN_WITHDRAW} نقطة`); return; }
 
             const userRef = doc(db, "users", currentUser.uid);
-            await updateDoc(userRef, {
-                points: increment(-MIN_WITHDRAW) 
-            });
+            await updateDoc(userRef, { points: increment(-MIN_WITHDRAW) });
 
             alert(`تم طلب سحب 50 ج.م بنجاح! سيتم التحويل لـ ${wallet} رقم ${phone}`);
             location.reload();
@@ -69,22 +67,17 @@
 
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; padding-bottom: 50px; }
-        
-        /* الهيدر مع الرابط */
         .header { background: #1e293b; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f59e0b; }
         .header-title { font-weight: bold; color: #f59e0b; margin: 0; cursor: pointer; text-decoration: none; }
         .home-btn { text-decoration: none; color: white; background: #334155; padding: 5px 15px; border-radius: 5px; font-size: 0.9rem; }
-
         .wallet-card { background: #1e293b; padding: 20px; border-radius: 15px; border: 2px solid #10b981; margin: 15px auto; max-width: 300px; }
         .money { color: #10b981; font-size: 1.5rem; font-weight: bold; }
-        
         .wheel-outer { position: relative; width: 280px; height: 280px; margin: 20px auto; }
         #wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #334155; transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1); background: conic-gradient(#ef4444 0 60deg, #3b82f6 60deg 120deg, #10b981 120deg 180deg, #f59e0b 180deg 240deg, #8b5cf6 240deg 300deg, #ec4899 300deg 360deg); position: relative; overflow: hidden; }
         .number { position: absolute; width: 100%; height: 100%; text-align: center; font-weight: bold; padding-top: 10px; transform-origin: center; }
         .n1 { transform: rotate(30deg); } .n2 { transform: rotate(90deg); } .n3 { transform: rotate(150deg); } 
         .n4 { transform: rotate(210deg); } .n5 { transform: rotate(270deg); } .n6 { transform: rotate(330deg); }
         .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #fbbf24; z-index: 10; }
-        
         .input-box { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; }
         .btn { padding: 15px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; width: 100%; max-width: 280px; margin-top: 10px; }
         .btn-ads { background: #f59e0b; color: white; }
@@ -131,7 +124,9 @@
 
     <script>
         function openAd() {
-            window.open('https://pl29306040.profitablecpmratenetwork.com/9fe84b828ef9b7a97276fa7264809ecf/invoke.js', '_blank');
+            // السمارت لينك الجديد بتاعك هنا
+            window.open('https://www.profitablecpmratenetwork.com/u5q9f3187?key=113ec9ff04cdb2a2e84cd1106f15041f', '_blank');
+            
             document.getElementById('msg').innerText = "جاري التحقق... (5 ثوانٍ)";
             document.getElementById('ads-btn').disabled = true;
             setTimeout(() => {
@@ -168,6 +163,7 @@
         }
     </script>
 
+    <!-- كود البوب اندر الجديد بتاعك -->
     <script src="https://pl29306040.profitablecpmratenetwork.com/9f/e8/4b/9fe84b828ef9b7a97276fa7264809ecf.js"></script>
 </body>
 </html>
