@@ -20,21 +20,22 @@
         onAuthStateChanged(auth, (user) => {
             const guestBox = document.getElementById('guest-box');
             const verifyBox = document.getElementById('verify-box');
-            const memberBox = document.getElementById('member-box');
+            const memberContent = document.getElementById('member-content');
 
             if (user) {
                 if (user.emailVerified) {
-                    memberBox.style.display = 'block';
+                    memberContent.style.display = 'block';
                     guestBox.style.display = 'none';
                     verifyBox.style.display = 'none';
+                    document.body.style.alignItems = 'flex-start'; // تغيير المحاذاة لعرض المحتوى بالكامل
                 } else {
                     verifyBox.style.display = 'block';
                     guestBox.style.display = 'none';
-                    memberBox.style.display = 'none';
+                    memberContent.style.display = 'none';
                 }
             } else {
-                guestBox.style.display = 'block';
-                memberBox.style.display = 'none';
+                guestBox.style.display = 'flex';
+                memberContent.style.display = 'none';
                 verifyBox.style.display = 'none';
             }
         });
@@ -43,47 +44,62 @@
     </script>
     <style>
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .container { background: #1e293b; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #3b82f6; width: 90%; max-width: 450px; }
-        h1 { color: #3b82f6; margin-bottom: 20px; }
-        .btn { padding: 12px 25px; text-decoration: none; border-radius: 10px; font-weight: bold; display: inline-block; margin: 10px; border: none; cursor: pointer; transition: 0.3s; }
+        
+        /* تصميم الكروت (للدخول والتحقق) */
+        .auth-card { background: #1e293b; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #3b82f6; width: 90%; max-width: 450px; }
+        
+        /* تصميم المحتوى الرئيسي (اللي كان في أول مرة) */
+        #member-content { width: 100%; text-align: right; display: none; }
+        .main-header { background: #1e293b; padding: 20px; border-bottom: 2px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; }
+        
+        .btn { padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; border: none; cursor: pointer; transition: 0.3s; }
         .btn-blue { background: #3b82f6; color: white; }
         .btn-green { background: #10b981; color: white; }
-        .btn-red { background: #ef4444; color: white; margin-top: 20px; }
-        .btn:hover { transform: translateY(-3px); opacity: 0.9; }
-        .status-badge { background: #334155; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; color: #94a3b8; }
+        .btn-red { background: #ef4444; color: white; }
+        
+        .content-body { padding: 40px 5%; }
+        .profile-section { background: #1e293b; padding: 30px; border-radius: 15px; border-right: 5px solid #3b82f6; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="guest-box">
-            <h1>مرحباً بك</h1>
-            <p>أهلاً بك في موقع <b>M07amed9abri</b></p>
-            <p style="font-size: 0.9rem; color: #94a3b8;">يرجى الدخول أو إنشاء حساب جديد للوصول إلى المحتوى.</p>
-            <div style="margin-top: 25px;">
-                <a href="login.html" class="btn btn-blue">تسجيل الدخول</a>
-                <a href="register.html" class="btn btn-green">إنشاء حساب جديد</a>
+    <div id="guest-box" class="auth-card">
+        <h1>مرحباً بك</h1>
+        <p>موقع <b>M07amed9abri</b></p>
+        <p style="font-size: 0.9rem; color: #94a3b8;">يرجى تسجيل الدخول للوصول للمحتوى الأصلي.</p>
+        <div style="margin-top: 20px;">
+            <a href="login.html" class="btn btn-blue">تسجيل الدخول</a>
+            <a href="register.html" class="btn btn-green">إنشاء حساب جديد</a>
+        </div>
+    </div>
+
+    <div id="verify-box" class="auth-card" style="display: none;">
+        <h2 style="color: #f59e0b;">تفعيل الحساب</h2>
+        <p>تم إنشاء حسابك، برجاء الضغط على رابط التفعيل المرسل لإيميلك.</p>
+        <button onclick="location.reload()" class="btn btn-blue">حدث الصفحة بعد التفعيل</button>
+        <button onclick="logout()" class="btn btn-red" style="margin-top: 15px;">خروج</button>
+    </div>
+
+    <div id="member-content">
+        <header class="main-header">
+            <span style="font-size: 1.5rem; font-weight: bold; color: #3b82f6;">M07amed9abri</span>
+            <button onclick="logout()" class="btn btn-red">تسجيل الخروج</button>
+        </header>
+
+        <div class="content-body">
+            <div class="profile-section">
+                <h1>أهلاً بك في موقعي الشخصي</h1>
+                <p>هذا هو المحتوى الذي كان يظهر في البداية، متاح الآن لك فقط كعضو مفعل.</p>
+                <p>يمكنك هنا وضع سيرتك الذاتية، مشاريعك، أو أي بيانات خاصة بك.</p>
             </div>
-        </div>
 
-        <div id="verify-box" style="display: none;">
-            <h2 style="color: #f59e0b;">خطوة أخيرة!</h2>
-            <p>لقد قمت بإنشاء الحساب بنجاح.</p>
-            <p style="background: #334155; padding: 15px; border-radius: 10px; font-size: 0.9rem;">
-                برجاء فحص بريدك الإلكتروني والضغط على <b>رابط التفعيل</b> الذي أرسلناه إليك.
-            </p>
-            <button onclick="location.reload()" class="btn btn-blue">لقد فعلت الحساب، افتح الموقع</button>
-            <br>
-            <button onclick="logout()" class="btn btn-red" style="padding: 8px 15px; font-size: 0.8rem;">تسجيل الخروج</button>
-        </div>
-
-        <div id="member-box" style="display: none;">
-            <div class="status-badge">الحساب مفعل ✅</div>
-            <h1>محتوى الموقع</h1>
-            <p>أهلاً بك يا <b>M07amed9abri</b> في لوحة التحكم الخاصة بك.</p>
-            <div style="margin-top: 30px; border-top: 1px solid #334155; pt: 20px;">
-                <p>هنا تظهر بياناتك وملفاتك الخاصة.</p>
-                <button onclick="logout()" class="btn btn-red">تسجيل الخروج</button>
+            <div style="margin-top: 20px; color: #94a3b8;">
+                <h3>خدماتي:</h3>
+                <ul>
+                    <li>برمجة المواقع</li>
+                    <li>إدارة قواعد البيانات</li>
+                    <li>تطوير الأنظمة</li>
+                </ul>
             </div>
         </div>
     </div>
