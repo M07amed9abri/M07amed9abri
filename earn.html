@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M07amed9abri | العب واربح</title>
+    <title>M07amed9abri | نظام الأرباح</title>
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -22,7 +22,7 @@
 
         let currentUser = null;
         let userPoints = 0;
-        let nextMinWithdraw = 10;
+        const MIN_WITHDRAW = 500; // الحد الأدنى ثابت 500 نقطة
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
@@ -30,7 +30,6 @@
                 const userDoc = await getDoc(doc(db, "users", user.uid));
                 if (userDoc.exists()) {
                     userPoints = userDoc.data().points || 0;
-                    nextMinWithdraw = userDoc.data().nextMin || 10;
                 }
                 updateUI();
             } else { location.assign('index.html'); }
@@ -48,48 +47,38 @@
             const phone = document.getElementById('phone-number').value;
             const wallet = document.getElementById('wallet-type').value;
             if (phone.length < 11) { alert("يرجى إدخال رقم هاتف صحيح"); return; }
-            if (userPoints < nextMinWithdraw) { alert(`الحد الأدنى للسحب هو ${nextMinWithdraw} نقطة`); return; }
-
-            let newMin = nextMinWithdraw + 10;
-            if (newMin > 500) newMin = 500;
+            if (userPoints < MIN_WITHDRAW) { alert(`الحد الأدنى للسحب هو ${MIN_WITHDRAW} نقطة`); return; }
 
             const userRef = doc(db, "users", currentUser.uid);
             await updateDoc(userRef, {
-                points: increment(-nextMinWithdraw),
-                nextMin: newMin
+                points: increment(-MIN_WITHDRAW) // خصم الـ 500 نقطة
             });
 
-            alert(`تم الطلب! سيتم التحويل لـ ${wallet} رقم ${phone}`);
+            alert(`تم طلب سحب 50 ج.م بنجاح! سيتم التحويل لـ ${wallet} رقم ${phone}`);
             location.reload();
         };
 
         function updateUI() {
             document.getElementById('points-count').innerText = userPoints.toFixed(1);
             document.getElementById('money-count').innerText = (userPoints / 10).toFixed(2);
-            document.getElementById('min-text').innerText = nextMinWithdraw;
-            document.getElementById('withdraw-area').style.display = userPoints >= nextMinWithdraw ? 'block' : 'none';
+            document.getElementById('withdraw-area').style.display = userPoints >= MIN_WITHDRAW ? 'block' : 'none';
+            document.getElementById('progress-text').innerText = userPoints >= MIN_WITHDRAW ? "يمكنك السحب الآن!" : `تحتاج إلى ${(MIN_WITHDRAW - userPoints).toFixed(1)} نقطة إضافية للسحب`;
         }
     </script>
 
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; padding-bottom: 50px; }
-        
-        /* شريط العنوان العلوي */
         .header { background: #1e293b; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f59e0b; }
         .header-title { font-weight: bold; color: #f59e0b; margin: 0; }
         .home-btn { text-decoration: none; color: white; background: #334155; padding: 5px 15px; border-radius: 5px; font-size: 0.9rem; }
-
         .wallet-card { background: #1e293b; padding: 20px; border-radius: 15px; border: 2px solid #10b981; margin: 15px auto; max-width: 300px; }
         .money { color: #10b981; font-size: 1.5rem; font-weight: bold; }
-        
-        /* ستايل العجلة */
         .wheel-outer { position: relative; width: 280px; height: 280px; margin: 20px auto; }
         #wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #334155; transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1); background: conic-gradient(#ef4444 0 60deg, #3b82f6 60deg 120deg, #10b981 120deg 180deg, #f59e0b 180deg 240deg, #8b5cf6 240deg 300deg, #ec4899 300deg 360deg); position: relative; overflow: hidden; }
         .number { position: absolute; width: 100%; height: 100%; text-align: center; font-weight: bold; padding-top: 10px; transform-origin: center; }
         .n1 { transform: rotate(30deg); } .n2 { transform: rotate(90deg); } .n3 { transform: rotate(150deg); } 
         .n4 { transform: rotate(210deg); } .n5 { transform: rotate(270deg); } .n6 { transform: rotate(330deg); }
         .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #fbbf24; z-index: 10; }
-
         .input-box { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; }
         .btn { padding: 15px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; width: 100%; max-width: 280px; margin-top: 10px; }
         .btn-ads { background: #f59e0b; color: white; }
@@ -107,7 +96,7 @@
     <div class="wallet-card">
         <div>🪙 رصيدك: <span id="points-count">0</span> نقطة</div>
         <div class="money">≈ <span id="money-count">0</span> ج.م</div>
-        <div style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;">الحد الأدنى للسحب: <span id="min-text">10</span> نقطة</div>
+        <div id="progress-text" style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;"></div>
     </div>
 
     <div class="wheel-outer">
@@ -121,11 +110,10 @@
 
     <button id="ads-btn" class="btn btn-ads" onclick="openAd()">🎥 شاهد إعلان للعب</button>
     <button id="spin-btn" class="btn btn-spin" onclick="startSpin()">🔄 لف العجلة!</button>
-
     <p id="msg" style="height: 20px;"></p>
 
     <div id="withdraw-area" style="display:none; background:#1e293b; padding:15px; border-radius:15px; max-width:300px; margin:20px auto; border: 1px solid #ef4444;">
-        <h3>سحب كاش 💸</h3>
+        <h3>سحب كاش (50 ج.م) 💸</h3>
         <select id="wallet-type" class="input-box">
             <option>فودافون كاش</option>
             <option>اتصالات كاش</option>
