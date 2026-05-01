@@ -3,167 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M07amed9abri | العب واربح</title>
+    <title>M07amed9abri | تحدي X-O</title>
     
-    <!-- نظام Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getDatabase, ref, set, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCXMcpxwSq-PJdmviG0rVgayPgy8NEnqn0",
             authDomain: "m07amed9abri-auth.firebaseapp.com",
             projectId: "m07amed9abri-auth",
+            databaseURL: "https://m07amed9abri-auth-default-rtdb.firebaseio.com", // تأكد من تفعيل Realtime Database
             appId: "1:840232341099:web:061164fada80d4a640ab2e"
         };
+
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        const rtdb = getDatabase(app);
 
         let currentUser = null;
         let userPoints = 0;
-        const MIN_WITHDRAW = 500; 
+        let currentGameId = null;
+        let playerSymbol = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
                 const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists()) {
-                    userPoints = userDoc.data().points || 0;
-                }
+                userPoints = userDoc.exists() ? userDoc.data().points : 0;
                 updateUI();
             } else { location.assign('index.html'); }
         });
 
-        window.updatePointsInDB = async (win) => {
-            if(!currentUser) return;
-            const userRef = doc(db, "users", currentUser.uid);
-            await setDoc(userRef, { points: increment(win) }, { merge: true });
-            userPoints += win;
+        // إنشاء أو انضمام لتحدي
+        window.findMatch = async () => {
+            const bet = 10; // مبلغ الرهان الثابت
+            if (userPoints < bet) { alert("رصيدك غير كافٍ للرهان (تحتاج 10 نقاط)"); return; }
+
+            document.getElementById('match-status').innerText = "جاري البحث عن خصم...";
+            
+            // تحديث الرصيد (خصم الرهان)
+            await updateDoc(doc(db, "users", currentUser.uid), { points: increment(-bet) });
+            userPoints -= bet;
             updateUI();
+
+            const lobbyRef = ref(rtdb, 'lobby');
+            onValue(lobbyRef, (snapshot) => {
+                const data = snapshot.val();
+                if (!currentGameId) {
+                    if (data) {
+                        // انضمام لغرفة موجودة
+                        const rooms = Object.keys(data);
+                        currentGameId = rooms[0];
+                        playerSymbol = 'O';
+                        update(ref(rtdb, `games/${currentGameId}`), { player2: currentUser.uid, status: 'playing' });
+                        remove(ref(rtdb, `lobby/${currentGameId}`));
+                        startGame();
+                    } else {
+                        // إنشاء غرفة جديدة
+                        currentGameId = currentUser.uid;
+                        playerSymbol = 'X';
+                        set(ref(rtdb, `games/${currentGameId}`), {
+                            player1: currentUser.uid,
+                            board: Array(9).fill(""),
+                            turn: currentUser.uid,
+                            status: 'waiting',
+                            bet: bet
+                        });
+                        set(ref(rtdb, `lobby/${currentGameId}`), true);
+                        document.getElementById('match-status').innerText = "في انتظار دخول خصم...";
+                        startGame();
+                    }
+                }
+            }, { onlyOnce: true });
         };
 
-        window.requestWithdraw = async () => {
-            const phone = document.getElementById('phone-number').value;
-            const wallet = document.getElementById('wallet-type').value;
-            if (phone.length < 11) { alert("يرجى إدخال رقم هاتف صحيح"); return; }
-            if (userPoints < MIN_WITHDRAW) { alert(`الحد الأدنى للسحب هو ${MIN_WITHDRAW} نقطة`); return; }
+        function startGame() {
+            const gameRef = ref(rtdb, `games/${currentGameId}`);
+            onValue(gameRef, (snapshot) => {
+                const game = snapshot.val();
+                if (!game) return;
+                renderBoard(game.board);
+                if (game.status === 'playing') {
+                    document.getElementById('match-status').innerText = game.turn === currentUser.uid ? "دورك الآن!" : "دور الخصم...";
+                }
+                if (game.winner) {
+                    handleEndGame(game.winner);
+                }
+            });
+        }
 
-            const userRef = doc(db, "users", currentUser.uid);
-            await updateDoc(userRef, { points: increment(-MIN_WITHDRAW) });
-
-            alert(`تم طلب سحب 50 ج.م بنجاح! سيتم التحويل لـ ${wallet} رقم ${phone}`);
-            location.reload();
+        window.makeMove = (index) => {
+            const gameRef = ref(rtdb, `games/${currentGameId}`);
+            onValue(gameRef, (snapshot) => {
+                const game = snapshot.val();
+                if (game.turn === currentUser.uid && game.board[index] === "" && game.status === 'playing') {
+                    const newBoard = [...game.board];
+                    newBoard[index] = playerSymbol;
+                    const nextTurn = game.player1 === currentUser.uid ? game.player2 : game.player1;
+                    
+                    const winner = checkWinner(newBoard);
+                    update(ref(rtdb, `games/${currentGameId}`), {
+                        board: newBoard,
+                        turn: nextTurn,
+                        winner: winner || (newBoard.includes("") ? null : 'draw')
+                    });
+                }
+            }, { onlyOnce: true });
         };
+
+        async function handleEndGame(winner) {
+            if (winner === 'draw') {
+                alert("تعادل! تم رد نصف الرهان.");
+                await updateDoc(doc(db, "users", currentUser.uid), { points: increment(5) });
+            } else if ((winner === 'X' && playerSymbol === 'X') || (winner === 'O' && playerSymbol === 'O')) {
+                const prize = 15; // 20 مجموع الرهان - 5 عمولة (25%)
+                alert(`مبروك! فزت بـ ${prize} نقطة`);
+                await updateDoc(doc(db, "users", currentUser.uid), { points: increment(prize) });
+            } else {
+                alert("حظ أوفر، لقد خسرت التحدي.");
+            }
+            location.reload(); // إعادة ضبط الصفحة
+        }
+
+        function checkWinner(b) {
+            const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            for (let l of lines) { if (b[l[0]] && b[l[0]] === b[l[1]] && b[l[0]] === b[l[2]]) return b[l[0]]; }
+            return null;
+        }
+
+        function renderBoard(board) {
+            const cells = document.querySelectorAll('.cell');
+            board.forEach((val, i) => cells[i].innerText = val);
+        }
 
         function updateUI() {
             document.getElementById('points-count').innerText = userPoints.toFixed(1);
             document.getElementById('money-count').innerText = (userPoints / 10).toFixed(2);
-            document.getElementById('withdraw-area').style.display = userPoints >= MIN_WITHDRAW ? 'block' : 'none';
-            document.getElementById('progress-text').innerText = userPoints >= MIN_WITHDRAW ? "يمكنك السحب الآن!" : `تحتاج إلى ${(MIN_WITHDRAW - userPoints).toFixed(1)} نقطة إضافية للسحب`;
         }
     </script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; padding-bottom: 50px; }
-        .header { background: #1e293b; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f59e0b; }
-        .header-title { font-weight: bold; color: #f59e0b; margin: 0; cursor: pointer; text-decoration: none; }
-        .home-btn { text-decoration: none; color: white; background: #334155; padding: 5px 15px; border-radius: 5px; font-size: 0.9rem; }
-        .wallet-card { background: #1e293b; padding: 20px; border-radius: 15px; border: 2px solid #10b981; margin: 15px auto; max-width: 300px; }
-        .money { color: #10b981; font-size: 1.5rem; font-weight: bold; }
-        .wheel-outer { position: relative; width: 280px; height: 280px; margin: 20px auto; }
-        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #334155; transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1); background: conic-gradient(#ef4444 0 60deg, #3b82f6 60deg 120deg, #10b981 120deg 180deg, #f59e0b 180deg 240deg, #8b5cf6 240deg 300deg, #ec4899 300deg 360deg); position: relative; overflow: hidden; }
-        .number { position: absolute; width: 100%; height: 100%; text-align: center; font-weight: bold; padding-top: 10px; transform-origin: center; }
-        .n1 { transform: rotate(30deg); } .n2 { transform: rotate(90deg); } .n3 { transform: rotate(150deg); } 
-        .n4 { transform: rotate(210deg); } .n5 { transform: rotate(270deg); } .n6 { transform: rotate(330deg); }
-        .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #fbbf24; z-index: 10; }
-        .input-box { width: 90%; padding: 12px; margin: 5px 0; border-radius: 8px; border: none; }
-        .btn { padding: 15px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; width: 100%; max-width: 280px; margin-top: 10px; }
-        .btn-ads { background: #f59e0b; color: white; }
-        .btn-spin { background: #10b981; color: white; display: none; }
-        .btn-withdraw { background: #ef4444; color: white; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; }
+        .header { background: #1e293b; padding: 15px; border-bottom: 2px solid #f59e0b; }
+        .wallet-card { background: #1e293b; padding: 15px; border-radius: 15px; border: 2px solid #10b981; margin: 10px auto; max-width: 280px; }
+        .board { display: grid; grid-template-columns: repeat(3, 80px); grid-gap: 10px; justify-content: center; margin: 20px auto; }
+        .cell { width: 80px; height: 80px; background: #1e293b; border: 2px solid #334155; border-radius: 10px; font-size: 2rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn-match { padding: 15px 30px; background: #f59e0b; color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        #match-status { color: #f59e0b; margin: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <a href="index.html" class="header-title">M07amed9abri</a>
-        <a href="index.html" class="home-btn">الرئيسية 🏠</a>
+        <h2 style="margin:0; color:#f59e0b;">M07amed9abri | تحدي X-O</h2>
     </div>
 
     <div class="wallet-card">
         <div>🪙 رصيدك: <span id="points-count">0</span> نقطة</div>
-        <div class="money">≈ <span id="money-count">0</span> ج.م</div>
-        <div id="progress-text" style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;"></div>
+        <div style="color:#10b981; font-weight:bold;">≈ <span id="money-count">0</span> ج.م</div>
     </div>
 
-    <div class="wheel-outer">
-        <div class="pointer"></div>
-        <div id="wheel">
-            <div class="number n1">0.5</div><div class="number n2">1.0</div>
-            <div class="number n3">1.5</div><div class="number n4">2.0</div>
-            <div class="number n5">2.5</div><div class="number n6">3.0</div>
-        </div>
+    <div id="setup-area">
+        <p>رهان التحدي: 10 نقاط</p>
+        <button class="btn-match" onclick="findMatch()">البحث عن تحدي 🎮</button>
     </div>
 
-    <button id="ads-btn" class="btn btn-ads" onclick="openAd()">🎥 شاهد إعلان للعب</button>
-    <button id="spin-btn" class="btn btn-spin" onclick="startSpin()">🔄 لف العجلة!</button>
-    <p id="msg" style="height: 20px;"></p>
+    <div id="match-status">اضغط لبدء التحدي</div>
 
-    <div id="withdraw-area" style="display:none; background:#1e293b; padding:15px; border-radius:15px; max-width:300px; margin:20px auto; border: 1px solid #ef4444;">
-        <h3>سحب كاش (50 ج.م) 💸</h3>
-        <select id="wallet-type" class="input-box">
-            <option>فودافون كاش</option>
-            <option>اتصالات كاش</option>
-            <option>أورنج كاش</option>
-        </select>
-        <input type="tel" id="phone-number" class="input-box" placeholder="رقم المحفظة">
-        <button onclick="requestWithdraw()" class="btn btn-withdraw">تأكيد طلب السحب</button>
+    <div class="board">
+        <div class="cell" onclick="makeMove(0)"></div>
+        <div class="cell" onclick="makeMove(1)"></div>
+        <div class="cell" onclick="makeMove(2)"></div>
+        <div class="cell" onclick="makeMove(3)"></div>
+        <div class="cell" onclick="makeMove(4)"></div>
+        <div class="cell" onclick="makeMove(5)"></div>
+        <div class="cell" onclick="makeMove(6)"></div>
+        <div class="cell" onclick="makeMove(7)"></div>
+        <div class="cell" onclick="makeMove(8)"></div>
     </div>
 
+    <script src="https://pl29306040.profitablecpmratenetwork.com/9f/e8/4b/9fe84b828ef9b7a97276fa7264809ecf.js"></script>
     <script>
-        function openAd() {
-            // السمارت لينك الجديد بتاعك هنا
+        // السمارت لينك بيفتح عند أي محاولة لبدء جيم لزيادة الأرباح
+        function openAdBeforeGame() {
             window.open('https://www.profitablecpmratenetwork.com/u5q9f3187?key=113ec9ff04cdb2a2e84cd1106f15041f', '_blank');
-            
-            document.getElementById('msg').innerText = "جاري التحقق... (5 ثوانٍ)";
-            document.getElementById('ads-btn').disabled = true;
-            setTimeout(() => {
-                document.getElementById('ads-btn').style.display = 'none';
-                document.getElementById('spin-btn').style.display = 'inline-block';
-                document.getElementById('msg').innerText = "جاهز للف!";
-            }, 5000);
-        }
-
-        function startSpin() {
-            const wheel = document.getElementById('wheel');
-            const rotation = Math.floor(Math.random() * 360) + 3600;
-            wheel.style.transform = `rotate(${rotation}deg)`;
-            document.getElementById('spin-btn').disabled = true;
-
-            setTimeout(() => {
-                const finalDeg = 360 - (rotation % 360);
-                let prize = 0.5;
-                if (finalDeg >= 60 && finalDeg < 120) prize = 1.0;
-                else if (finalDeg >= 120 && finalDeg < 180) prize = 1.5;
-                else if (finalDeg >= 180 && finalDeg < 240) prize = 2.0;
-                else if (finalDeg >= 240 && finalDeg < 300) prize = 2.5;
-                else if (finalDeg >= 300) prize = 3.0;
-
-                window.updatePointsInDB(prize);
-                document.getElementById('msg').innerText = `مبروك! كسبت ${prize}`;
-                setTimeout(() => {
-                    document.getElementById('spin-btn').style.display = 'none';
-                    document.getElementById('ads-btn').style.display = 'inline-block';
-                    document.getElementById('ads-btn').disabled = false;
-                    document.getElementById('spin-btn').disabled = false;
-                }, 2000);
-            }, 4000);
         }
     </script>
-
-    <!-- كود البوب اندر الجديد بتاعك -->
-    <script src="https://pl29306040.profitablecpmratenetwork.com/9f/e8/4b/9fe84b828ef9b7a97276fa7264809ecf.js"></script>
 </body>
 </html>
