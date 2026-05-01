@@ -48,14 +48,14 @@
         .n4 { transform: rotate(210deg); } .n5 { transform: rotate(270deg); } .n6 { transform: rotate(330deg); }
         .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #fbbf24; z-index: 10; }
         .btn { padding: 15px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; width: 100%; max-width: 280px; margin-top: 15px; font-size: 1.1rem; transition: 0.3s; }
-        .btn-ads { background: #f59e0b; color: #fff; }
+        .btn-ads { background: #f59e0b; color: #fff; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
         .btn-spin { background: #10b981; color: #fff; display: none; }
-        #msg { margin-top: 15px; color: #cbd5e1; height: 20px; }
+        #msg { margin-top: 15px; color: #cbd5e1; height: 20px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
-    <div class="wallet">🪙 رصيدك: <span id="points-count">0</span></div>
+    <div class="wallet">🪙 رصيدك الحالي: <span id="points-count">0</span></div>
 
     <div class="wheel-outer">
         <div class="pointer"></div>
@@ -66,72 +66,60 @@
         </div>
     </div>
 
-    <button id="ads-btn" class="btn btn-ads" onclick="startAdProcess()">🎥 شاهد إعلان للعب</button>
-    <button id="spin-btn" class="btn btn-spin" onclick="finalSpin()">🔄 لف العجلة!</button>
+    <button id="ads-btn" class="btn btn-ads" onclick="openAdAndPrepare()">🎥 شاهد إعلان لتفعيل اللعب</button>
+    
+    <button id="spin-btn" class="btn btn-spin" onclick="runWheel()">🔄 لف العجلة الآن!</button>
 
     <p id="msg"></p>
 
     <script>
-        // دالة الزر الأول (الإعلان)
-        function startAdProcess() {
-            document.getElementById('msg').innerText = "جاري التحميل... انتظر 5 ثوانٍ";
-            document.getElementById('ads-btn').style.opacity = "0.5";
-            document.getElementById('ads-btn').disabled = true;
+        function openAdAndPrepare() {
+            // 1. افتح الإعلان فوراً (استخدم الرابط المباشر بتاعك هنا)
+            // لو معندكش رابط مباشر لسه، الرابط ده هيفتح إعلان عام لحد ما تغيره
+            const adUrl = 'https://pl29306040.profitablecpmratenetwork.com/9fe84b828ef9b7a97276fa7264809ecf/invoke.js'; 
+            window.open(adUrl, '_blank');
 
-            // كود Popunder سيعمل هنا بمجرد الضغط
+            // 2. تحديث الواجهة
+            document.getElementById('msg').innerText = "يتم التحقق من المشاهدة... (7 ثوانٍ)";
+            document.getElementById('ads-btn').disabled = true;
+            document.getElementById('ads-btn').style.opacity = "0.6";
+
+            // 3. انتظر 7 ثوانٍ قبل السماح باللف
             setTimeout(() => {
-                document.getElementById('msg').innerText = "✅ ممتاز! يمكنك اللف الآن";
+                document.getElementById('msg').innerText = "✅ تمت المشاهدة بنجاح! يمكنك اللعب الآن.";
                 document.getElementById('ads-btn').style.display = 'none';
                 document.getElementById('spin-btn').style.display = 'inline-block';
-            }, 5000);
+            }, 7000);
         }
 
-        // دالة اللف النهائية المنفصلة تماماً
-        function finalSpin() {
+        function runWheel() {
             const wheel = document.getElementById('wheel');
             const spinBtn = document.getElementById('spin-btn');
-            
-            // حساب الزاوية عشوائياً
-            const randomRotation = Math.floor(Math.random() * 360) + 3600; 
+            const rotation = Math.floor(Math.random() * 360) + 3600; 
             
             spinBtn.disabled = true;
-            document.getElementById('msg').innerText = "🎡 حظاً موفقاً...";
-            
-            // تنفيذ الدوران
-            wheel.style.transform = `rotate(${randomRotation}deg)`;
+            document.getElementById('msg').innerText = "🎡 بالتوفيق يا بطل...";
+            wheel.style.transform = `rotate(${rotation}deg)`;
 
             setTimeout(() => {
-                const actualDeg = randomRotation % 360;
-                const finalDeg = 360 - actualDeg;
-                
-                let prize = 0.5;
-                if (finalDeg >= 60 && finalDeg < 120) prize = 1.0;
-                else if (finalDeg >= 120 && finalDeg < 180) prize = 1.5;
-                else if (finalDeg >= 180 && finalDeg < 240) prize = 2.0;
-                else if (finalDeg >= 240 && finalDeg < 300) prize = 2.5;
-                else if (finalDeg >= 300) prize = 3.0;
+                const finalAngle = 360 - (rotation % 360);
+                let winAmount = 0.5;
+                if (finalAngle >= 60 && finalAngle < 120) winAmount = 1.0;
+                else if (finalAngle >= 120 && finalAngle < 180) winAmount = 1.5;
+                else if (finalAngle >= 180 && finalAngle < 240) winAmount = 2.0;
+                else if (finalAngle >= 240 && finalAngle < 300) winAmount = 2.5;
+                else if (finalAngle >= 300) winAmount = 3.0;
 
-                // تحديث البيانات
-                if(window.updatePointsInDB) {
-                    window.updatePointsInDB(prize);
-                }
+                window.updatePointsInDB(winAmount);
+                document.getElementById('msg').innerHTML = `<b style="color:#10b981">🎉 مبروك! ربحت ${winAmount} نقطة</b>`;
                 
-                document.getElementById('msg').innerHTML = `🎉 مبروك! ربحت ${prize} نقطة`;
-                
-                // إعادة التهيئة بعد ثانيتين
                 setTimeout(() => {
-                    wheel.style.transition = "none";
-                    wheel.style.transform = `rotate(${actualDeg}deg)`; 
-                    setTimeout(() => {
-                        wheel.style.transition = "transform 4s cubic-bezier(0.1, 0.7, 0.1, 1)";
-                        document.getElementById('spin-btn').style.display = 'none';
-                        document.getElementById('ads-btn').style.display = 'inline-block';
-                        document.getElementById('ads-btn').disabled = false;
-                        document.getElementById('ads-btn').style.opacity = "1";
-                        spinBtn.disabled = false;
-                    }, 50);
+                    document.getElementById('spin-btn').style.display = 'none';
+                    document.getElementById('ads-btn').style.display = 'inline-block';
+                    document.getElementById('ads-btn').disabled = false;
+                    document.getElementById('ads-btn').style.opacity = "1";
+                    spinBtn.disabled = false;
                 }, 2000);
-                
             }, 4100);
         }
     </script>
