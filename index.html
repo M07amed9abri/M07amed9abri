@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>M07amed9abri | لوحة التحكم</title>
+    <title>M07amed9abri | الرئيسية</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, reload } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -31,7 +30,6 @@
                     memberContent.style.display = 'block';
                     guestBox.style.display = 'none';
                     verifyBox.style.display = 'none';
-                    // عرض اسم المستخدم
                     userNameDisplay.innerText = user.displayName || user.email.split('@')[0];
                 } else {
                     verifyBox.style.display = 'block';
@@ -50,39 +48,25 @@
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         };
 
-        window.logout = () => { signOut(auth).then(() => location.assign('index.html')); };
+        window.logout = () => { signOut(auth).then(() => location.reload()); };
     </script>
-
     <style>
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; min-height: 100vh; }
-        
-        /* Header */
-        .main-header { background: #1e293b; padding: 10px 5%; border-bottom: 2px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; margin: 0; text-align: center; }
+        .main-header { background: #1e293b; padding: 15px 5%; border-bottom: 2px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
         .header-left { display: flex; align-items: center; gap: 15px; }
-        
-        /* Settings Dropdown */
-        .settings-container { position: relative; }
         .fa-gear { font-size: 1.4rem; color: #94a3b8; cursor: pointer; transition: 0.3s; }
-        .fa-gear:hover { color: #3b82f6; transform: rotate(90deg); }
-        .dropdown-content { display: none; position: absolute; left: 0; top: 45px; background: #1e293b; min-width: 180px; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 8px 16px rgba(0,0,0,0.4); text-align: right; overflow: hidden; }
+        .fa-gear:hover { transform: rotate(90deg); color: #3b82f6; }
+        .dropdown-content { display: none; position: absolute; left: 0; top: 45px; background: #1e293b; min-width: 180px; border-radius: 12px; border: 1px solid #334155; text-align: right; overflow: hidden; }
         .user-info-item { display: flex; align-items: center; padding: 12px; text-decoration: none; color: white; border-bottom: 1px solid #334155; }
         .user-info-item:hover { background: #334155; }
         .profile-img-circle { width: 30px; height: 30px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 10px; }
-
-        /* Grid & Cards */
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; padding: 40px 5%; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 40px 5%; }
         .card { background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid #334155; transition: 0.3s; position: relative; }
-        .card:hover { transform: translateY(-10px); border-color: #3b82f6; }
-        .icon { font-size: 45px; margin-bottom: 15px; display: block; }
-        
-        .btn { padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; text-decoration: none; display: inline-block; transition: 0.3s; }
-        .btn-blue { background: #3b82f6; color: white; width: 100%; }
-        .btn-green { background: #10b981; color: white; width: 100%; }
-        .btn-gold { background: #f59e0b; color: white; width: 100%; }
-        .btn-purple { background: #8b5cf6; color: white; width: 100%; }
-        .btn-red { background: #ef4444; color: white; padding: 8px 15px; font-size: 0.9rem; }
-        .badge { background: #f59e0b; color: white; font-size: 0.7rem; padding: 4px 8px; border-radius: 8px; position: absolute; top: 15px; left: 15px; }
-
+        .card:hover { transform: translateY(-5px); border-color: #3b82f6; }
+        .btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
+        .btn-gold { background: #f59e0b; color: white; width: 80%; }
+        .btn-blue { background: #3b82f6; color: white; width: 80%; }
+        .btn-red { background: #ef4444; color: white; }
         .auth-card { background: #1e293b; padding: 40px; border-radius: 20px; border: 1px solid #3b82f6; width: 90%; max-width: 400px; margin: 100px auto; }
     </style>
 </head>
@@ -90,33 +74,28 @@
 
     <div id="guest-box" class="auth-card" style="display: none;">
         <h1>M07amed9abri</h1>
-        <p>مرحباً بك في عالم الترفيه والربح</p>
         <a href="login.html" class="btn btn-blue" style="margin-bottom: 10px;">تسجيل الدخول</a>
-        <a href="register.html" class="btn btn-green">إنشاء حساب جديد</a>
+        <a href="register.html" class="btn btn-blue" style="background:#10b981">حساب جديد</a>
     </div>
 
     <div id="verify-box" class="auth-card" style="display: none;">
-        <h2 style="color: #f59e0b;">تفعيل الحساب</h2>
-        <p>افتح إيميلك واضغط على رابط التفعيل ثم اضغط الزر بالأسفل.</p>
-        <button onclick="location.reload()" class="btn btn-blue">تحديث الحالة</button>
-        <button onclick="logout()" class="btn btn-red" style="margin-top: 20px;">خروج</button>
+        <h2>تفعيل الحساب</h2>
+        <p>يرجى تفعيل حسابك من الإيميل أولاً.</p>
+        <button onclick="location.reload()" class="btn btn-blue">تحديث</button>
     </div>
 
     <div id="member-content" style="display: none;">
         <header class="main-header">
             <span style="font-size: 1.5rem; font-weight: bold; color: #3b82f6;">M07amed9abri</span>
-            
             <div class="header-left">
-                <div class="settings-container">
+                <div style="position: relative;">
                     <i class="fa-solid fa-gear" onclick="toggleSettingsMenu()"></i>
                     <div id="settings-dropdown" class="dropdown-content">
                         <a href="settings.html" class="user-info-item">
-                            <div class="profile-img-circle"><i class="fa-solid fa-user" style="font-size: 0.8rem;"></i></div>
-                            <span id="user-name-display">تحميل...</span>
+                            <div class="profile-img-circle"><i class="fa-solid fa-user"></i></div>
+                            <span id="user-name-display">...</span>
                         </a>
-                        <a href="settings.html" class="user-info-item" style="font-size: 0.9rem; color: #94a3b8;">
-                            <i class="fa-solid fa-sliders" style="margin-left: 10px;"></i> الإعدادات
-                        </a>
+                        <a href="settings.html" class="user-info-item"><i class="fa-solid fa-sliders" style="margin-left:10px"></i>الإعدادات</a>
                     </div>
                 </div>
                 <button onclick="logout()" class="btn btn-red">خروج</button>
@@ -125,43 +104,18 @@
 
         <div class="grid-container">
             <div class="card" style="border-color: #f59e0b;">
-                <span class="badge">مربح 💰</span>
-                <span class="icon">🪙</span>
+                <span style="font-size: 40px;">🪙</span>
                 <h3>ألعاب الربح</h3>
-                <p>شاهد الإعلانات، لف العجلة واجمع النقاط.</p>
-                <a href="earn.html" class="btn btn-gold">ابدأ الربح الآن</a>
+                <p>لف العجلة واكسب حتى 3 جنيه!</p>
+                <a href="earn.html" class="btn btn-gold">العب الآن</a>
             </div>
-
-            <div class="card" style="border-color: #8b5cf6;">
-                <span class="icon">👥</span>
+            <div class="card">
+                <span style="font-size: 40px;">👥</span>
                 <h3>دردشة الأصدقاء</h3>
-                <p>غرف دردشة مباشرة للتواصل مع الجميع.</p>
-                <a href="#" class="btn btn-purple">دخول الشات</a>
-            </div>
-
-            <div class="card">
-                <span class="icon">📖</span>
-                <h3>قصص وحكايات</h3>
-                <p>مكتبة من القصص المشوقة والمفيدة.</p>
-                <a href="#" class="btn btn-blue">تصفح القصص</a>
-            </div>
-
-            <div class="card">
-                <span class="icon">🎮</span>
-                <h3>ألعاب التسلية</h3>
-                <p>ألعاب خفيفة لتقضية وقت ممتع.</p>
-                <a href="#" class="btn btn-blue">العب الآن</a>
+                <p>تواصل مع أصدقائك فوراً.</p>
+                <a href="#" class="btn btn-blue" style="background:#8b5cf6">دخول</a>
             </div>
         </div>
     </div>
-
-    <script>
-        // إغلاق قائمة الترس عند الضغط بالخارج
-        window.addEventListener('click', function(e){   
-            if (!document.querySelector('.settings-container').contains(e.target)){
-                document.getElementById('settings-dropdown').style.display = 'none';
-            }
-        });
-    </script>
 </body>
 </html>
