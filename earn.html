@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M07amed9abri | العب واربح</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCXMcpxwSq-PJdmviG0rVgayPgy8NEnqn0",
+            authDomain: "m07amed9abri-auth.firebaseapp.com",
+            projectId: "m07amed9abri-auth",
+            appId: "1:840232341099:web:061164fada80d4a640ab2e"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    document.getElementById('points-count').innerText = userDoc.data().points || 0;
+                } else {
+                    await setDoc(doc(db, "users", user.uid), { points: 0 });
+                }
+            } else {
+                window.location.assign('index.html');
+            }
+        });
+
+        // وظيفة إضافة النقاط في قاعدة البيانات
+        window.addPointsToDB = async (amount) => {
+            if (currentUser) {
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, { points: increment(amount) });
+                const updatedDoc = await getDoc(userRef);
+                document.getElementById('points-count').innerText = updatedDoc.data().points;
+            }
+        };
+    </script>
+
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; padding: 20px; }
+        .container { max-width: 500px; margin: auto; }
+        .wallet { background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #f59e0b; margin: 20px 0; font-size: 1.3rem; }
+        
+        /* مكان الإعلان */
+        .ad-space { background: #334155; border: 2px dashed #94a3b8; padding: 10px; margin: 20px 0; min-height: 100px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; color: #94a3b8; }
+
+        /* العجلة */
+        .wheel-container { position: relative; width: 280px; height: 280px; margin: 30px auto; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #1e293b; transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1); background: conic-gradient(#ef4444 0 60deg, #3b82f6 60deg 120deg, #10b981 120deg 180deg, #f59e0b 180deg 240deg, #8b5cf6 240deg 300deg, #ec4899 300deg 360deg); }
+        .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid gold; z-index: 10; }
+
+        .btn { padding: 15px 25px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; transition: 0.3s; width: 100%; margin-bottom: 10px; }
+        .btn-spin { background: #10b981; color: white; display: none; } /* مخفي حتى يشاهد الإعلان */
+        .btn-ads { background: #f59e0b; color: white; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🎡 العب واربح</h1>
+        
+        <div class="wallet">🪙 رصيدك: <span id="points-count">0</span> نقطة</div>
+
+        <div class="ad-space">
+            إعلان (Banner Ad Area)<br>هنا يظهر إعلانات Google AdSense لتكسب منها
+        </div>
+
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div id="wheel"></div>
+        </div>
+
+        <button id="ads-btn" class="btn btn-ads" onclick="showFakeAd()">🎥 شاهد إعلان للحصول على لفة</button>
+        
+        <button id="spin-btn" class="btn btn-spin" onclick="startSpin()">🔄 لف العجلة الآن!</button>
+
+        <p id="msg" style="margin-top: 15px;"></p>
+
+        <a href="index.html" style="color: #94a3b8; text-decoration: none;"><br>⬅ العودة للرئيسية</a>
+    </div>
+
+    <script>
+        let isSpinning = false;
+
+        function showFakeAd() {
+            const msg = document.getElementById('msg');
+            msg.innerText = "جاري تحميل الإعلان... انتظر 5 ثوانٍ";
+            document.getElementById('ads-btn').disabled = true;
+
+            // محاكاة لمشاهدة الإعلان
+            setTimeout(() => {
+                msg.style.color = "#10b981";
+                msg.innerText = "✅ تمت المشاهدة! يمكنك اللف الآن.";
+                document.getElementById('ads-btn').style.display = 'none';
+                document.getElementById('spin-btn').style.display = 'block';
+            }, 5000); 
+        }
+
+        function startSpin() {
+            if (isSpinning) return;
+            isSpinning = true;
+            
+            const wheel = document.getElementById('wheel');
+            const randomDeg = Math.floor(Math.random() * 360) + 3600;
+            wheel.style.transform = `rotate(${randomDeg}deg)`;
+
+            setTimeout(() => {
+                const actualDeg = randomDeg % 360;
+                let win = 10; // قيمة افتراضية
+                if (actualDeg > 300) win = 50;
+                
+                window.addPointsToDB(win); // حفظ في Firebase
+                
+                document.getElementById('msg').innerText = `🎉 كسبت ${win} نقطة! شاهد إعلان آخر لتلعب ثانياً.`;
+                document.getElementById('spin-btn').style.display = 'none';
+                document.getElementById('ads-btn').style.display = 'block';
+                document.getElementById('ads-btn').disabled = false;
+                isSpinning = false;
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
