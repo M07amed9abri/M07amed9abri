@@ -8,7 +8,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut, reload } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // تأكد أن هذه البيانات مطابقة تماماً لما في Firebase Console
         const firebaseConfig = {
             apiKey: "AIzaSyCXMcpxwSq-PJdmviG0rVgayPgy8NEnqn0",
             authDomain: "m07amed9abri-auth.firebaseapp.com",
@@ -24,9 +23,7 @@
             const memberContent = document.getElementById('member-content');
 
             if (user) {
-                // تحديث بيانات المستخدم إجبارياً للتأكد من حالة التفعيل
                 await reload(user); 
-                
                 if (user.emailVerified) {
                     memberContent.style.display = 'block';
                     guestBox.style.display = 'none';
@@ -49,53 +46,74 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: white; text-align: center; margin: 0; min-height: 100vh; }
         .auth-card { background: #1e293b; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #3b82f6; width: 90%; max-width: 400px; margin: 100px auto; }
         #member-content { width: 100%; display: none; }
-        .main-header { background: #1e293b; padding: 15px 5%; border-bottom: 2px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; }
-        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 40px 5%; }
-        .card { background: #1e293b; padding: 25px; border-radius: 15px; border: 1px solid #334155; transition: 0.3s; }
-        .card:hover { transform: translateY(-10px); border-color: #3b82f6; }
-        .icon { font-size: 40px; margin-bottom: 15px; display: block; }
-        .btn { padding: 10px 20px; text-decoration: none; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; display: inline-block; }
-        .btn-blue { background: #3b82f6; color: white; }
-        .btn-green { background: #10b981; color: white; width: 100%; margin-top: 10px; }
-        .btn-gold { background: #f59e0b; color: white; width: 100%; margin-top: 10px; }
+        .main-header { background: #1e293b; padding: 15px 5%; border-bottom: 2px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; padding: 40px 5%; }
+        .card { background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid #334155; transition: 0.3s; position: relative; overflow: hidden; }
+        .card:hover { transform: translateY(-10px); border-color: #3b82f6; box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2); }
+        .icon { font-size: 45px; margin-bottom: 20px; display: block; }
+        .btn { padding: 12px 25px; text-decoration: none; border-radius: 10px; font-weight: bold; cursor: pointer; border: none; display: inline-block; transition: 0.2s; }
+        .btn-blue { background: #3b82f6; color: white; width: 100%; }
+        .btn-green { background: #10b981; color: white; width: 100%; margin-top: 15px; }
+        .btn-gold { background: #f59e0b; color: white; width: 100%; margin-top: 15px; }
+        .btn-purple { background: #8b5cf6; color: white; width: 100%; margin-top: 15px; }
         .btn-red { background: #ef4444; color: white; }
+        .btn:active { transform: scale(0.95); }
+        .badge { background: #f59e0b; color: white; font-size: 0.7rem; padding: 4px 10px; border-radius: 10px; position: absolute; top: 15px; left: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="guest-box" class="auth-card" style="display: none;">
         <h1>M07amed9abri</h1>
-        <p>يرجى تسجيل الدخول للوصول للخدمات.</p>
-        <a href="login.html" class="btn btn-blue" style="width: 100%; margin-bottom: 10px;">تسجيل الدخول</a>
-        <a href="register.html" class="btn btn-green" style="width: 100%;">إنشاء حساب جديد</a>
+        <p>يرجى تسجيل الدخول للوصول إلى الخدمات المتميزة.</p>
+        <a href="login.html" class="btn btn-blue">تسجيل الدخول</a>
+        <a href="register.html" class="btn btn-green">إنشاء حساب جديد</a>
     </div>
 
     <div id="verify-box" class="auth-card" style="display: none;">
         <h2 style="color: #f59e0b;">تفعيل الحساب</h2>
-        <p>إذا ضغطت على الرابط في إيميلك، اضغط تحديث الآن.</p>
-        <button onclick="location.reload()" class="btn btn-blue" style="width: 100%;">تحديث الحالة</button>
-        <button onclick="logout()" class="btn btn-red" style="margin-top: 15px; width: 100%;">تسجيل الخروج</button>
+        <p>يرجى تفعيل حسابك من خلال الرابط المرسل إلى بريدك الإلكتروني.</p>
+        <button onclick="location.reload()" class="btn btn-blue">لقد فعلت الحساب، تحديث</button>
+        <button onclick="logout()" class="btn btn-red" style="margin-top: 15px; width: 100%;">خروج</button>
     </div>
 
     <div id="member-content">
         <header class="main-header">
-            <span style="font-size: 1.5rem; font-weight: bold; color: #3b82f6;">M07amed9abri</span>
+            <span style="font-size: 1.6rem; font-weight: bold; color: #3b82f6;">M07amed9abri</span>
             <button onclick="logout()" class="btn btn-red">تسجيل الخروج</button>
         </header>
 
         <div class="grid-container">
             <div class="card">
-                <span class="icon">📚</span>
+                <span class="icon">📖</span>
                 <h3>قصص وحكايات</h3>
-                <p>استمتع بقراءة أجمل القصص.</p>
-                <a href="#" class="btn btn-green">اقرأ الآن</a>
+                <p>مجموعة مختارة من أروع القصص والروايات.</p>
+                <a href="#" class="btn btn-green">تصفح القصص</a>
             </div>
+
             <div class="card">
                 <span class="icon">🎮</span>
                 <h3>ألعاب التسلية</h3>
-                <p>مجموعة من الألعاب الممتعة.</p>
-                <a href="#" class="btn btn-green">العب الآن</a>
+                <p>استمتع بوقتك مع مجموعة من الألعاب الخفيفة.</p>
+                <a href="#" class="btn btn-green">ابدأ اللعب</a>
             </div>
-            <div class="card">
-                <span class="icon">💰</span>
-                <h3>ألعاب الرب
+
+            <div class="card" style="border-color: #f59e0b;">
+                <span class="badge">حصري 💰</span>
+                <span class="icon">🪙</span>
+                <h3>ألعاب الربح</h3>
+                <p>شارك في الألعاب واجمع النقاط لتحويلها لجوائز.</p>
+                <a href="#" class="btn btn-gold">جمع الأرباح</a>
+            </div>
+
+            <div class="card" style="border-color: #8b5cf6;">
+                <span class="icon">👥</span>
+                <h3>دردشة الأصدقاء</h3>
+                <p>تواصل مع أصدقائك في غرف دردشة خاصة وآمنة.</p>
+                <a href="#" class="btn btn-purple">دخول الدردشة</a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
