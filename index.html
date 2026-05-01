@@ -56,31 +56,32 @@
         .header-left { display: flex; align-items: center; gap: 15px; }
         .fa-gear { font-size: 1.4rem; color: #94a3b8; cursor: pointer; transition: 0.3s; }
         .fa-gear:hover { transform: rotate(90deg); color: #3b82f6; }
-        .dropdown-content { display: none; position: absolute; left: 0; top: 45px; background: #1e293b; min-width: 180px; border-radius: 12px; border: 1px solid #334155; text-align: right; overflow: hidden; }
+        .dropdown-content { display: none; position: absolute; left: 0; top: 45px; background: #1e293b; min-width: 180px; border-radius: 12px; border: 1px solid #334155; text-align: right; overflow: hidden; z-index: 200; }
         .user-info-item { display: flex; align-items: center; padding: 12px; text-decoration: none; color: white; border-bottom: 1px solid #334155; }
         .user-info-item:hover { background: #334155; }
         .profile-img-circle { width: 30px; height: 30px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-left: 10px; }
         .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; padding: 40px 5%; }
         .card { background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid #334155; transition: 0.3s; position: relative; }
         .card:hover { transform: translateY(-5px); border-color: #3b82f6; }
-        .btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; text-decoration: none; display: inline-block; }
-        .btn-gold { background: #f59e0b; color: white; width: 80%; }
-        .btn-blue { background: #3b82f6; color: white; width: 80%; }
-        .btn-red { background: #ef4444; color: white; }
+        .icon { font-size: 40px; margin-bottom: 10px; display: block; }
+        .btn { padding: 10px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; text-decoration: none; display: inline-block; width: 80%; }
+        .btn-gold { background: #f59e0b; color: white; }
+        .btn-blue { background: #3b82f6; color: white; }
+        .btn-purple { background: #8b5cf6; color: white; }
+        .btn-green { background: #10b981; color: white; }
+        .btn-red { background: #ef4444; color: white; width: auto; }
         .auth-card { background: #1e293b; padding: 40px; border-radius: 20px; border: 1px solid #3b82f6; width: 90%; max-width: 400px; margin: 100px auto; }
     </style>
 </head>
 <body>
-
     <div id="guest-box" class="auth-card" style="display: none;">
         <h1>M07amed9abri</h1>
         <a href="login.html" class="btn btn-blue" style="margin-bottom: 10px;">تسجيل الدخول</a>
-        <a href="register.html" class="btn btn-blue" style="background:#10b981">حساب جديد</a>
+        <a href="register.html" class="btn btn-green">حساب جديد</a>
     </div>
 
     <div id="verify-box" class="auth-card" style="display: none;">
         <h2>تفعيل الحساب</h2>
-        <p>يرجى تفعيل حسابك من الإيميل أولاً.</p>
         <button onclick="location.reload()" class="btn btn-blue">تحديث</button>
     </div>
 
@@ -104,16 +105,28 @@
 
         <div class="grid-container">
             <div class="card" style="border-color: #f59e0b;">
-                <span style="font-size: 40px;">🪙</span>
+                <span class="icon">🪙</span>
                 <h3>ألعاب الربح</h3>
-                <p>لف العجلة واكسب حتى 3 جنيه!</p>
+                <p>شاهد الإعلانات واكسب نقاطك.</p>
                 <a href="earn.html" class="btn btn-gold">العب الآن</a>
             </div>
             <div class="card">
-                <span style="font-size: 40px;">👥</span>
+                <span class="icon">👥</span>
                 <h3>دردشة الأصدقاء</h3>
-                <p>تواصل مع أصدقائك فوراً.</p>
-                <a href="#" class="btn btn-blue" style="background:#8b5cf6">دخول</a>
+                <p>تواصل مع الجميع.</p>
+                <a href="#" class="btn btn-purple">دخول</a>
+            </div>
+            <div class="card">
+                <span class="icon">📖</span>
+                <h3>قصص وحكايات</h3>
+                <p>أروع القصص والروايات.</p>
+                <a href="#" class="btn btn-blue">قراءة</a>
+            </div>
+            <div class="card">
+                <span class="icon">🎮</span>
+                <h3>ألعاب التسلية</h3>
+                <p>وقت ممتع وألعاب خفيفة.</p>
+                <a href="#" class="btn btn-green">العب</a>
             </div>
         </div>
     </div>
