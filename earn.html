@@ -60,35 +60,36 @@
         <div class="pointer"></div>
         <div id="wheel">
             <div class="number n1">0.5</div><div class="number n2">1.0</div>
-            <div class="number n3">1.5</div><div class="number n4">2.0</div>
+            <div class="number n3">1.5</div><div class="number n4 :">2.0</div>
             <div class="number n5">2.5</div><div class="number n6">3.0</div>
         </div>
     </div>
     
     <button id="ads-btn" class="btn btn-ads" onclick="triggerAd()">🎥 شاهد إعلان للحصول على لفة</button>
-    <button id="spin-btn" class="btn btn-spin" onclick="spin()">🔄 لف العجلة!</button>
+    <button id="spin-btn" class="btn btn-spin" onclick="spinWheel()">🔄 لف العجلة الآن!</button>
     
     <p id="msg" style="margin-top:20px; font-weight:bold; min-height: 25px;"></p>
     <a href="index.html" style="color:#94a3b8; text-decoration:none; display:block; margin-top:20px;">⬅ العودة للرئيسية</a>
 
     <script>
         function triggerAd() {
-            document.getElementById('msg').innerText = "يتم تحميل الإعلان... انتظر 7 ثوانٍ";
+            document.getElementById('msg').innerText = "يتم تحميل الإعلان... انتظر ثوانٍ";
             document.getElementById('ads-btn').disabled = true;
 
-            // كود الـ Popunder سيفتح الإعلان بمجرد لمس الزر
+            // سيفتح الإعلان تلقائياً بسبب كود Adsterra بالأسفل
             setTimeout(() => {
-                document.getElementById('msg').innerText = "✅ اكتملت المشاهدة! يمكنك اللف الآن.";
+                document.getElementById('msg').innerText = "✅ جاهز! اضغط على زر اللف بالأخضر";
                 document.getElementById('ads-btn').style.display = 'none';
                 document.getElementById('spin-btn').style.display = 'inline-block';
-            }, 7000); 
+            }, 5000); 
         }
 
-        function spin() {
+        function spinWheel() {
             const wheel = document.getElementById('wheel');
             const randomDeg = Math.floor(Math.random() * 360) + 3600;
             wheel.style.transform = `rotate(${randomDeg}deg)`;
             document.getElementById('spin-btn').disabled = true;
+            document.getElementById('msg').innerText = "🎡 العجلة تدور...";
 
             setTimeout(() => {
                 const deg = 360 - (randomDeg % 360);
@@ -102,10 +103,13 @@
                 window.updatePoints(win);
                 document.getElementById('msg').innerHTML = `🎉 مبروك! كسبت ${win} نقطة`;
                 
-                document.getElementById('spin-btn').style.display = 'none';
-                document.getElementById('ads-btn').style.display = 'inline-block';
-                document.getElementById('ads-btn').disabled = false;
-                document.getElementById('spin-btn').disabled = false;
+                // إعادة الزرار للحالة الأولى للعب مرة تانية
+                setTimeout(() => {
+                    document.getElementById('spin-btn').style.display = 'none';
+                    document.getElementById('ads-btn').style.display = 'inline-block';
+                    document.getElementById('ads-btn').disabled = false;
+                    document.getElementById('spin-btn').disabled = false;
+                }, 2000);
             }, 4000);
         }
     </script>
