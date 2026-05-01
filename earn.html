@@ -29,7 +29,8 @@
             } else { location.assign('index.html'); }
         });
 
-        window.updatePoints = async (win) => {
+        window.updatePointsInDB = async (win) => {
+            if(!currentUser) return;
             const userRef = doc(db, "users", currentUser.uid);
             await setDoc(userRef, { points: increment(win) }, { merge: true });
             const updated = await getDoc(userRef);
@@ -38,79 +39,100 @@
     </script>
 
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; padding: 20px; margin: 0; }
-        .wallet { background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #f59e0b; margin: 20px auto; max-width: 300px; font-size: 1.2rem; }
-        .wheel-container { position: relative; width: 300px; height: 300px; margin: 30px auto; }
-        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #1e293b; transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1); position: relative; overflow: hidden; background: conic-gradient(#ef4444 0 60deg, #3b82f6 60deg 120deg, #10b981 120deg 180deg, #f59e0b 180deg 240deg, #8b5cf6 240deg 300deg, #ec4899 300deg 360deg); }
-        .number { position: absolute; width: 100%; height: 100%; text-align: center; font-weight: bold; font-size: 1.1rem; padding-top: 15px; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; text-align: center; padding: 20px; overflow-x: hidden; }
+        .wallet { background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #f59e0b; margin: 10px auto; max-width: 280px; font-size: 1.1rem; }
+        .wheel-outer { position: relative; width: 300px; height: 300px; margin: 30px auto; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #334155; transition: transform 4s cubic-bezier(0.1, 0.7, 0.1, 1); background: conic-gradient(#ef4444 0 60deg, #3b82f6 60deg 120deg, #10b981 120deg 180deg, #f59e0b 180deg 240deg, #8b5cf6 240deg 300deg, #ec4899 300deg 360deg); position: relative; }
+        .number { position: absolute; width: 100%; height: 100%; text-align: center; font-weight: bold; padding-top: 10px; transform-origin: center; }
         .n1 { transform: rotate(30deg); } .n2 { transform: rotate(90deg); } .n3 { transform: rotate(150deg); } 
         .n4 { transform: rotate(210deg); } .n5 { transform: rotate(270deg); } .n6 { transform: rotate(330deg); }
-        .pointer { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid gold; z-index: 10; }
-        .btn { padding: 15px 25px; border-radius: 10px; font-weight: bold; border: none; cursor: pointer; width: 100%; max-width: 300px; font-size: 1.1rem; margin-top: 10px; }
-        .btn-ads { background: #f59e0b; color: white; }
-        .btn-spin { background: #10b981; color: white; display: none; }
+        .pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 25px solid #fbbf24; z-index: 10; }
+        .btn { padding: 15px; border-radius: 12px; font-weight: bold; border: none; cursor: pointer; width: 100%; max-width: 280px; margin-top: 15px; font-size: 1.1rem; transition: 0.3s; }
+        .btn-ads { background: #f59e0b; color: #fff; }
+        .btn-spin { background: #10b981; color: #fff; display: none; }
+        #msg { margin-top: 15px; color: #cbd5e1; height: 20px; }
     </style>
 </head>
 <body>
 
-    <h1>🎡 العب واربح</h1>
-    <div class="wallet">🪙 رصيدك: <span id="points-count">0</span> نقطة</div>
-    
-    <div class="wheel-container">
+    <div class="wallet">🪙 رصيدك: <span id="points-count">0</span></div>
+
+    <div class="wheel-outer">
         <div class="pointer"></div>
         <div id="wheel">
             <div class="number n1">0.5</div><div class="number n2">1.0</div>
-            <div class="number n3">1.5</div><div class="number n4 :">2.0</div>
+            <div class="number n3">1.5</div><div class="number n4">2.0</div>
             <div class="number n5">2.5</div><div class="number n6">3.0</div>
         </div>
     </div>
-    
-    <button id="ads-btn" class="btn btn-ads" onclick="triggerAd()">🎥 شاهد إعلان للحصول على لفة</button>
-    <button id="spin-btn" class="btn btn-spin" onclick="spinWheel()">🔄 لف العجلة الآن!</button>
-    
-    <p id="msg" style="margin-top:20px; font-weight:bold; min-height: 25px;"></p>
-    <a href="index.html" style="color:#94a3b8; text-decoration:none; display:block; margin-top:20px;">⬅ العودة للرئيسية</a>
+
+    <button id="ads-btn" class="btn btn-ads" onclick="startAdProcess()">🎥 شاهد إعلان للعب</button>
+    <button id="spin-btn" class="btn btn-spin" onclick="finalSpin()">🔄 لف العجلة!</button>
+
+    <p id="msg"></p>
 
     <script>
-        function triggerAd() {
-            document.getElementById('msg').innerText = "يتم تحميل الإعلان... انتظر ثوانٍ";
+        // دالة الزر الأول (الإعلان)
+        function startAdProcess() {
+            document.getElementById('msg').innerText = "جاري التحميل... انتظر 5 ثوانٍ";
+            document.getElementById('ads-btn').style.opacity = "0.5";
             document.getElementById('ads-btn').disabled = true;
 
-            // سيفتح الإعلان تلقائياً بسبب كود Adsterra بالأسفل
+            // كود Popunder سيعمل هنا بمجرد الضغط
             setTimeout(() => {
-                document.getElementById('msg').innerText = "✅ جاهز! اضغط على زر اللف بالأخضر";
+                document.getElementById('msg').innerText = "✅ ممتاز! يمكنك اللف الآن";
                 document.getElementById('ads-btn').style.display = 'none';
                 document.getElementById('spin-btn').style.display = 'inline-block';
-            }, 5000); 
+            }, 5000);
         }
 
-        function spinWheel() {
+        // دالة اللف النهائية المنفصلة تماماً
+        function finalSpin() {
             const wheel = document.getElementById('wheel');
-            const randomDeg = Math.floor(Math.random() * 360) + 3600;
-            wheel.style.transform = `rotate(${randomDeg}deg)`;
-            document.getElementById('spin-btn').disabled = true;
-            document.getElementById('msg').innerText = "🎡 العجلة تدور...";
+            const spinBtn = document.getElementById('spin-btn');
+            
+            // حساب الزاوية عشوائياً
+            const randomRotation = Math.floor(Math.random() * 360) + 3600; 
+            
+            spinBtn.disabled = true;
+            document.getElementById('msg').innerText = "🎡 حظاً موفقاً...";
+            
+            // تنفيذ الدوران
+            wheel.style.transform = `rotate(${randomRotation}deg)`;
 
             setTimeout(() => {
-                const deg = 360 - (randomDeg % 360);
-                let win = 0.5;
-                if (deg >= 60 && deg < 120) win = 1.0;
-                else if (deg >= 120 && deg < 180) win = 1.5;
-                else if (deg >= 180 && deg < 240) win = 2.0;
-                else if (deg >= 240 && deg < 300) win = 2.5;
-                else if (deg >= 300) win = 3.0;
-
-                window.updatePoints(win);
-                document.getElementById('msg').innerHTML = `🎉 مبروك! كسبت ${win} نقطة`;
+                const actualDeg = randomRotation % 360;
+                const finalDeg = 360 - actualDeg;
                 
-                // إعادة الزرار للحالة الأولى للعب مرة تانية
+                let prize = 0.5;
+                if (finalDeg >= 60 && finalDeg < 120) prize = 1.0;
+                else if (finalDeg >= 120 && finalDeg < 180) prize = 1.5;
+                else if (finalDeg >= 180 && finalDeg < 240) prize = 2.0;
+                else if (finalDeg >= 240 && finalDeg < 300) prize = 2.5;
+                else if (finalDeg >= 300) prize = 3.0;
+
+                // تحديث البيانات
+                if(window.updatePointsInDB) {
+                    window.updatePointsInDB(prize);
+                }
+                
+                document.getElementById('msg').innerHTML = `🎉 مبروك! ربحت ${prize} نقطة`;
+                
+                // إعادة التهيئة بعد ثانيتين
                 setTimeout(() => {
-                    document.getElementById('spin-btn').style.display = 'none';
-                    document.getElementById('ads-btn').style.display = 'inline-block';
-                    document.getElementById('ads-btn').disabled = false;
-                    document.getElementById('spin-btn').disabled = false;
+                    wheel.style.transition = "none";
+                    wheel.style.transform = `rotate(${actualDeg}deg)`; 
+                    setTimeout(() => {
+                        wheel.style.transition = "transform 4s cubic-bezier(0.1, 0.7, 0.1, 1)";
+                        document.getElementById('spin-btn').style.display = 'none';
+                        document.getElementById('ads-btn').style.display = 'inline-block';
+                        document.getElementById('ads-btn').disabled = false;
+                        document.getElementById('ads-btn').style.opacity = "1";
+                        spinBtn.disabled = false;
+                    }, 50);
                 }, 2000);
-            }, 4000);
+                
+            }, 4100);
         }
     </script>
 
